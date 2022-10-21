@@ -28,6 +28,8 @@ Note: It shouldn't be necessary to run this on Linux or Windows Subsystem for Li
 ## Want to work on this repository?
 Follow the instructions under **"Need to set up your own?"**, and then read this primer:
 
+**Note: I deleted the old commit history recently because it contained personal information, so you won't be able to see when things were added, etc.**
+
 Here's how `app/app.py` works. It runs the following steps from the `app/steps` folder in sequence. 
 1. `reader.py` reads all the emails since the last email it read (stored as an ID number in ), updates the ID number of the latest email, and returns a list of `Email` objects, which is a custom class with basic info like from, to, subject, and body (will strip out attachments/funky stuff). This class has a bad name because the widely used `email` module has an `Email` class too.
 2. `parser.py` is where all the messy stuff happens; basically it runs the subject and body of each email through a bunch of regular expressions for dates, times, meal types, "sub", etc. to convert a messy email into a neat list of `Flag` objects which each have a position (what index in the string it starts on), type (e.g. `'date'` or `'shiftType'`), value (e.g. `'08/20'` or `True`). Then, it process this list of flags and ends up with a list of `Action` objects, which will be explained next.
