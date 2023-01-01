@@ -1,7 +1,7 @@
 # osca-sub-bot
-This is an email bot that helps aggregate sub requests that are waiting to be filled. It sends out a digest with all of the remaining sub requests, each with links to pre-filled emails to contact the requester, mark the request as covered, and add the shift to your Google Calendar.
+This is an email bot designed for use in my student cooperative at Oberlin College, the Oberlin Student Cooperative Association. It helps aggregate shift sub requests that are waiting to be filled. It sends out a digest with all of the remaining sub requests, each with links to pre-filled emails to contact the requester, mark the request as covered, and add the shift to your Google Calendar.
 
-Eventually, I plan to run this in the cloud using Microsoft Azure Functions (dirt cheap!) so no one needs to worry about actually triggering the sub bot on their own computer or setting it up to run daily. The files for this are mostly in place, it just has not been thoroughly tested, or even deployed. When that happens, the following will apply.
+Eventually, I plan to make a GUI and possibly run this in the cloud using Microsoft Azure Functions so no one needs to worry about actually triggering the sub bot on their own computer or setting it up to run daily. The files for this are mostly in place, it just has not been thoroughly tested or deployed. If/when that does happen, the following will apply:
 - To manually run this Azure function, follow the instructions [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-manually-run-non-http). This will eventually have actual instructions.
 
 ## Need to set up your own?

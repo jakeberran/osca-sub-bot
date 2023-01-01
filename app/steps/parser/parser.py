@@ -5,11 +5,13 @@
 import json
 from classes.EmailClass import Email
 from classes.Action import Action
+from classes.FunctionWithAppendedArguments import FunctionWithAppendedArguments
 import regex as re
 from classes.Flag import Flag
 from datetime import datetime, timedelta
 import types
 import logging
+import copy
 logger = logging.getLogger('parser')
 
 # GLOBALS
@@ -121,7 +123,7 @@ numericDate = '[0-9]{1,2} ?\\/ ?[0-9]{1,2}'
 # Handler for today/tomorrow
 # TODO check these
 def handleToday(s, date): # s is placeholder for the match, which is unimportant
-  logger.debug('handling today relative to', date)
+  logger.info(f'handling tomorrow relative to {date}')
   if date == False:
     today = datetime.today()
   else:
@@ -129,7 +131,7 @@ def handleToday(s, date): # s is placeholder for the match, which is unimportant
   return today.strftime(DATE_FORMAT)
 
 def handleTomorrow(s, date):
-  logger.debug('handling tomorrow relative to', date)
+  logger.info(f'handling tomorrow relative to {date}')
   if date == False:
     tomorrow = datetime.today() + timedelta(days=1)
   else:
@@ -138,34 +140,42 @@ def handleTomorrow(s, date):
 
 # Handler for "the 3rd", etc.
 def handleTheDay(s, date):
-  day = re.findall('\\d+', s)[0] # extract the day number
-  month = str(NOW.month if NOW.day < int(day) else NOW.month + 1)
-  return f'{day.zfill(2)}/{month.zfill(2)}'
+  try:
+    day = re.findall('\\d+', s)[0] # extract the day number
+    month = str(NOW.month if NOW.day < int(day) else NOW.month + 1)
+    return f'{day.zfill(2)}/{month.zfill(2)}'
+  except:
+    logger.error(f'No day number found in {s} relative to {date}')
 
 # Handler for this week
 def handleThisWeek(s, date, targetWeekday):
-  logger.debug('handling this week relative to', date)
+  logger.info(f'handling this {targetWeekday} relative to {date}')
   if date == False:
     refDate = datetime.today()
   else:
     refDate = datetime.strptime(date, DATE_FORMAT)
-  refWeekday = refDate.weekday()
+  refWeekday = (refDate.weekday() - 2) % 7
+  logger.info('reference weekday is ' + str(refWeekday))
 
   if refWeekday == targetWeekday:
     daysToAdd = 7
   else:
     daysToAdd = (targetWeekday - refWeekday) % 7 # behaves correctly for negatives
 
+  logger.info(daysToAdd)
+  logger.info('got ' + (refDate + timedelta(days = daysToAdd)).strftime(DATE_FORMAT))
   return (refDate + timedelta(days = daysToAdd)).strftime(DATE_FORMAT)
 
 # Handler for next week
 def handleNextWeek(s, date, targetWeekday):
-  logger.debug('handling next week relative to', date)
+  
+  logger.info(f'handling next {targetWeekday} relative to {date}')
   if date == False:
     refDate = datetime.today()
   else:
     refDate = datetime.strptime(date, DATE_FORMAT)
-  refWeekday = refDate.weekday()
+  refWeekday = (refDate.weekday() - 2) % 7
+  logger.info('reference weekday is ' + str(refWeekday))
 
   if refWeekday == targetWeekday:
     daysToAdd = 7
@@ -190,16 +200,24 @@ for i, key in enumerate(monthPatterns.keys()):
   datePatterns[f'\\b({i+1} ?(\\/) ?{validDayNum})\\b'] = monthPatterns[key]
   # TODO decide if dash should be allowed as date separator
 
+handleThisWeekWrappers = []
+handleNextWeekWrappers = []
+
 # Append datePatterns with weekdays, including "next (weekday)"
 # With negative lookahead to rule out "Tuesday, 7/14"
-for weekday in weekdayPatterns.keys():
+for i, weekday in enumerate(weekdayPatterns.keys()):
   thisWeekKey = f'\\b(\\w*(?<!next ){weekday}(?!,? ({abbrMonth}|{fullMonth}|{numericDate})))\\b'
   nextWeekKey = f'\\b(next {weekday}(?!,? ({abbrMonth}|{fullMonth}|{numericDate})))\\b'
 
-  datePatterns[thisWeekKey] = lambda s, date: handleThisWeek(s, date, weekdayPatterns[weekday])
+  # TODO from 10/26 figure this out, it is always having 6 as the target weekday, so something bad is happening here
 
-  datePatterns[nextWeekKey] = lambda s, date: handleNextWeek(s, date, weekdayPatterns[weekday])
+  datePatterns[thisWeekKey] = FunctionWithAppendedArguments(handleThisWeek, i)
 
+  datePatterns[nextWeekKey] = FunctionWithAppendedArguments(handleNextWeek, i)
+
+for key in datePatterns.keys():
+  if callable(datePatterns[key]):
+    datePatterns[key]('sunday', '10/12')
 
 # Formats a date string nicely (take in the monthNum)
 def handleDateStr(dateStr = '', monthNum = 1):
@@ -296,6 +314,8 @@ def parseEmail(message):
     name = email = message.From
 
   sentDatetime = message.timestamp
+
+  logger.info(name + ', ' + email)
 
   # work in lowercase to not go crazy
   body = message.body.lower()
@@ -853,7 +873,7 @@ def makeFlags(text, date):
   for p in datePatterns.keys():
     for match in re.finditer(p, text):
       value = datePatterns[p]
-      if type(value) == types.FunctionType: # for "the 3rd" and today/tomorrow
+      if callable(value): # for "the 3rd" and today/tomorrow
         result = value(match.group(0), date) # https://docs.python.org/3/library/re.html#re.Match.group
         # passes in both arguments, each is for a different function
       elif isinstance(value, int): # for "August 3" or "8/3"

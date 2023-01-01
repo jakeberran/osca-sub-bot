@@ -9,11 +9,11 @@ from helpers.db import getDB, updateTopId
 import logging
 logger = logging.getLogger('app')
 
-def runApp():
-  logger.info('Starting app...')
+def runApp(readNemails = False):
+  logger.info('\n\nSTARTING APP...')
   
   # get in the new emails
-  inMessages, topId = readEmails(config('DATABASE_PATH'))
+  inMessages, topId = readEmails(config('DATABASE_PATH'), readNEmails=readNemails)
 
   # for each one, run it through the text parser to parse it into actions (add <entry>, delete <thing>)
   actions = []

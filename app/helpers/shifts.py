@@ -68,8 +68,12 @@ def shiftInfoToDatetime(shift):
     return shift['datetime'] # an ISO 8601 string
 
 def isOver(shift):
-  dt = datetime.fromisoformat(shiftInfoToDatetime(shift))
-  return dt < datetime.now()
+  try:
+    dt = datetime.fromisoformat(shiftInfoToDatetime(shift))
+    return dt < datetime.now()
+  except:
+    logger.error('Could not determine if the following shift is over: ' + str(shift))
+    return True
 
 # For testing
 if __name__ == '__main__':
