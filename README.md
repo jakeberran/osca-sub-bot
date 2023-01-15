@@ -37,7 +37,7 @@ Here's how `app/app.py` works. It runs the following steps from the `app/steps` 
 2. `parser.py` is where all the messy stuff happens; basically it runs the subject and body of each email through a bunch of regular expressions for dates, times, meal types, "sub", etc. to convert a messy email into a neat list of `Flag` objects which each have a position (what index in the string it starts on), type (e.g. `'date'` or `'shiftType'`), value (e.g. `'08/20'` or `True`). Then, it process this list of flags and ends up with a list of `Action` objects, which will be explained next.
 3. `handler.py` takes in a list of `Action` objects and for each one, performs an action on the "database" (which is just a JSON file that gets converted into a dictionary, modified, and converted back). This may be adding, deleting, or "boosting" (when there is recent activity on a request email chain, but no one has covered).
 4. `writer.py` uses `jinja2` to produce HTML for the email body from the template `template.html`.
-5. `sender.py` takes in basic email info and sends the email out to the `TO_EMAIL` specified in the environment variables.
+5. `sender.py` takes in basic email info and sends the email out to the `TEST_TO_EMAIL` or `REAL_TO_EMAIL` specified in the environment variables.
 
 ## What to tell your co-op?
 - It's not meant to interfere with or totally replace existing sub-requesting methods, it's meant to make sure people's requests don't get lost and provide quick ways to see them, contact the requester, and add the shift to your Google Calendar.

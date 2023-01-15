@@ -7,7 +7,7 @@ from decouple import config
 import logging
 logger = logging.getLogger('writer')
 
-ggroup = config('TO_EMAIL')
+ggroup = config('REAL_TO_EMAIL')
 
 def writeEmail(From, to, subject, databasePath):
   logger.info('========== WRITING EMAIL ==========')
@@ -63,7 +63,7 @@ def writeEmail(From, to, subject, databasePath):
     subRequests = validRequests, 
     today = datetime.now().strftime("%m/%d"),
     ggroup = ggroup,
-    subsBotEmail = config('EMAIL_USERNAME')
+    subBotEmail = config('EMAIL_USERNAME')
   )
 
   with open(resultPath,'w') as f: f.write(body) # overwrites old result.html
@@ -71,7 +71,7 @@ def writeEmail(From, to, subject, databasePath):
 
 if __name__ == '__main__':
   logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-  writeEmail(config('EMAIL_USERNAME'), config('TO_EMAIL'), 'Testing writer.py', config('DATABASE_PATH'))
+  writeEmail(config('EMAIL_USERNAME'), config('TEST_TO_EMAIL'), 'Testing writer.py', config('DATABASE_PATH'))
 
 # Dump for template
 # {% if r['isNew'] %} background-color: rgb(255, 255, 0, 0.8); {% elif r['isBoosted'] %} background-color: rgb(86, 249, 255, 0.3); {% endif %}

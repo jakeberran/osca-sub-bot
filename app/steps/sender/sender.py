@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
   with open(inFile, 'r') as f:
     From = "Sub Bot"
-    to = config('TO_EMAIL')
+    to = config('TEST_TO_EMAIL')
     
     date_string = datetime.now().strftime("%A, %m/%d %H:%M")
     subject = f"\U0001F916 Daily Subs | {date_string}"

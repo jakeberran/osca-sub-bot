@@ -26,7 +26,8 @@ def runApp(readNemails = False):
 
   # Set variables for writing the email
   From = "Sub Bot"
-  to = config('TO_EMAIL')
+  test_to = config('TEST_TO_EMAIL')
+  real_to = config('REAL_TO_EMAIL')
   
   date_string = datetime.now().strftime("%A, %m/%d (%I:%M %p)")
   subject = f"\U0001F916 Daily Subs | {date_string}"
@@ -37,7 +38,7 @@ def runApp(readNemails = False):
       return
 
     # write the email
-    sendParams = writeEmail(From, to, subject, config('DATABASE_PATH'))
+    sendParams = writeEmail(From, test_to, subject, config('DATABASE_PATH'))
 
     sendEmail(*sendParams)
 
