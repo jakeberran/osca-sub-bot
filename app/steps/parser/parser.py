@@ -1,5 +1,4 @@
-# Parses email content into actions (e.g. add an entry, delete an entry, boost an entry)
-# helperRegexs.py has all the patterns, this file can be for the more detailed processing
+# Parses email content into actions (e.g. add an entry, delete an entry)
 
 
 import json
@@ -9,70 +8,45 @@ from classes.FunctionWithAppendedArguments import FunctionWithAppendedArguments
 import regex as re
 from classes.Flag import Flag
 from datetime import datetime, timedelta
-import types
 import logging
-import copy
 logger = logging.getLogger('parser')
+
+from helpers.regexes import *
+from helpers.db import getDB, overwriteDB
 
 # GLOBALS
 DATE_FORMAT = '%m/%d'
 TIME_FORMAT = '%I:%M %p'
 NOW = datetime.now()
 
-# Matching strings for different flags
-requestTypePatterns = {
-  '\\b(sub|subbing|subbed|subs|sub\\?|(someone|anyone|please|plz) cover|cover my|fill in|take my|take over|swap|trade)\\b': 'sub',
-  "(data for sub bot sub \\(please don't delete\\):)": 'subAuto',
-  '\\b(cover(ed|ing)|i can (sub|cover|take)|all good)\\b': 'cover',
-  "(data for sub bot cover \\(please don't delete\\):)": 'coverAuto',
-  '\\b((boost|bump)(|ing))\\b': 'boost'
-}
+# todo store all these globally somewhere, in a simpler way, and compute them here
+# shiftTimesByType = {
+#   'breakfast crew': ['08:20 AM'],
+#   'pre-crew': ['11:50 AM', '05:50 PM'],
+#   'crew': ['08:20 AM', '01:00 PM', '07:00 PM'],
+#   'commando': ['08:30 PM'],
+#   'cook': ['09:20 AM', '10:20 AM', '11:20 AM', '03:20 PM', '04:20 PM', '05:20 PM']
+# }
 
-shiftTypePatterns = {
-  '\\b((breakfast|brekkie) crew)\\b': 'breakfast crew',
-  '\\b(pre(| |-)crew)\\b': 'pre-crew',
-  '\\b((\\w*(?<!pre(| |-))crew(|s))|(pic))\\b': 'crew',
-  '\\b(commando)\\b': 'commando',
-  '\\b(cook|cookshift)\\b': 'cook'
-}
+# shiftTimesByMeal = {
+#   'lunch': ['11:50 AM', '01:00 PM', '09:20 AM', '10:20 AM', '11:20 AM'],
+#   'dinner': ['05:50 PM', '07:00 PM', '03:20 PM', '04:20 PM', '05:20 PM'],
+#   'pizza': ['05:50 PM', '07:00 PM', '03:20 PM', '04:20 PM', '05:20 PM']
+# }
 
-mealPatterns = {
-  '\\b(lunch|lonch)\\b': 'lunch',
-  '\\b(dinner|din)\\b': 'dinner',
-  '\\b(pizza|zza)\\b': 'pizza'
-}
+# shiftTimesByAttribute = {
+#   'lead': ['09:20 AM', '01:00 PM', '03:20 PM', '07:00 PM'],
+#   'special': ['09:20 AM', '01:00 PM', '03:20 PM', '07:00 PM']
+# }
 
-miscPatterns = {
-  '\\b(head(| |-)cook|pic)\\b': 'lead',
-  '\\b(special meal)\\b': 'special'
-}
-
-textPatterns = {
-  '((\\r\\n\\r\\n)|((?<!\\r\\n)(\\r\\n)(?!\\r\\n)))': 'newline' # matches single or double
-}
-
-# todo store all these globally somewhere
-shiftTypeTimes = {
-  'breakfast crew': ['08:20 AM'],
-  'pre-crew': ['11:50 AM', '05:50 PM'],
-  'crew': ['08:20 AM', '01:00 PM', '07:00 PM'],
-  'commando': ['08:30 PM'],
-  'cook': ['09:20 AM', '10:20 AM', '11:20 AM', '03:20 PM', '04:20 PM', '05:20 PM']
-}
-
-mealTimes = {
-  'lunch': ['11:50 AM', '01:00 PM', '09:20 AM', '10:20 AM', '11:20 AM'],
-  'dinner': ['05:50 PM', '07:00 PM', '03:20 PM', '04:20 PM', '05:20 PM'],
-  'pizza': ['05:50 PM', '07:00 PM', '03:20 PM', '04:20 PM', '05:20 PM']
-}
-
-miscTimes = {
-  'lead': ['09:20 AM', '01:00 PM', '03:20 PM', '07:00 PM'],
-  'special': ['09:20 AM', '01:00 PM', '03:20 PM', '07:00 PM']
-}
+# Compute shift times from globally stored
+shiftTimesDict = getDB('app/settings.json')['shiftTimes']
+shiftTimesByType = shiftTimesDict['byType']
+shiftTimesByMeal = shiftTimesDict['byMeal']
+shiftTimesByAttribute = shiftTimesDict['byAttribute']
 
 allShiftTimes = []
-for times in shiftTypeTimes.values():
+for times in shiftTimesByType.values():
   allShiftTimes = list(set(allShiftTimes + times))
 
 
@@ -82,43 +56,6 @@ for times in shiftTypeTimes.values():
 next14days = []
 for i in range(14):
   next14days.append((datetime.today() + timedelta(days=i)).strftime(DATE_FORMAT))
-
-# As a helper for the date patterns
-weekdayPatterns = {
-  '(monday|mon)': 0,
-  '(tuesday|tue|tues)': 1,
-  '(wednesday|wed)': 2,
-  '(thursday|thu|thurs)': 3,
-  '(friday|fri)': 4,
-  '(saturday|sat)': 5,
-  '(sunday|sun)': 6
-}
-
-monthPatterns = {
-  '(jan|january)': 1,
-  '(feb|february|febuary)': 2,
-  '(mar|march)': 3,
-  '(apr|april)': 4,
-  '(may)': 5,
-  '(jun|june)': 6,
-  '(jul|july)': 7,
-  '(aug|august)': 8,
-  '(sep|sept|september)': 9,
-  '(oct|october)': 10,
-  '(nov|november)': 11,
-  '(dec|december)': 12
-}
-
-# valid date day numbers
-validDayNum = '((3[0-1])|([1-2][0-9])|([1-9]))'
-validDaySuffixes = '(st|nd|rd|th)'
-
-# weekdays, months
-abbrWeekday = '(sun|mon|tue|wed|thu|fri|sat)'
-spAbbrWeekday = '(lun|mar|mie|jue|vie|s\u00e1b|dom)'
-abbrMonth = '(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)'
-fullMonth = '(january|february|march|april|may|june|july|august|september|october|november|december)'
-numericDate = '[0-9]{1,2} ?\\/ ?[0-9]{1,2}'
 
 # Handler for today/tomorrow
 # TODO check these
@@ -209,15 +146,9 @@ for i, weekday in enumerate(weekdayPatterns.keys()):
   thisWeekKey = f'\\b(\\w*(?<!next ){weekday}(?!,? ({abbrMonth}|{fullMonth}|{numericDate})))\\b'
   nextWeekKey = f'\\b(next {weekday}(?!,? ({abbrMonth}|{fullMonth}|{numericDate})))\\b'
 
-  # TODO from 10/26 figure this out, it is always having 6 as the target weekday, so something bad is happening here
-
   datePatterns[thisWeekKey] = FunctionWithAppendedArguments(handleThisWeek, i)
 
   datePatterns[nextWeekKey] = FunctionWithAppendedArguments(handleNextWeek, i)
-
-for key in datePatterns.keys():
-  if callable(datePatterns[key]):
-    datePatterns[key]('sunday', '10/12')
 
 # Formats a date string nicely (take in the monthNum)
 def handleDateStr(dateStr = '', monthNum = 1):
@@ -250,24 +181,20 @@ def handleSingleTimeStr(timeStr):
   elif 'pm' in timeStr or 'p.m' in timeStr:
     m = 'PM'
   else: # defaults to 9am-8pm (can be overridden by breakfast crew later on)
-    if int(hours) > 8 and int(hours) < 12:
+    if int(hours) > 8 and int(hours) < 12: # 9, 10, or 11 default to AM
       m = 'AM'
-    elif int(hours) <= 8 or int(hours) == 12:
+    elif int(hours) <= 8 or int(hours) == 12: # 1 through 8 and 12 default to PM in the absence of other information
       m = 'PM'
 
   return f'{hours}:{minutes} {m}'
   # return HH:MM AM|PM
 
-# Time ranges; "3:20 and 4:20"
-_timeRangeConnector = 'to|-|and|through' # for the splitting
-timeRangeConnector = f' ?({_timeRangeConnector}) ?' # the real one
-
 def handleTimeRangeStr(timeRangeStr):
-  startStr, endStr = re.split(_timeRangeConnector, timeRangeStr.replace(' ', '')) # remove whitespace first then split
+  startStr, endStr = re.split(timeRangeConnectorForSplit, timeRangeStr.replace(' ', '')) # remove whitespace first then split
   start = handleSingleTimeStr(startStr)
   end = handleSingleTimeStr(endStr)
 
-  # Fix cases like 8-9 converting to 8pm-9am
+  # Fix cases like 8-9 converting to 8pm-9am (becuase of defaulting behavior in handleSingleTimeStr)
   if start[-2:] == 'PM' and end[-2:] == 'AM':
     end = end[:-2] + 'PM' # more likely to be commando than breakfast if no other info?
   
@@ -276,16 +203,6 @@ def handleTimeRangeStr(timeRangeStr):
     end = (datetime.strptime(end, TIME_FORMAT) + timedelta(hours=1)).strftime(TIME_FORMAT)
   
   return start, end
-
-# TIME REGEXS
-standardTime = '((1[0-2]|0?[1-9])(:|\\.)([0-5][0-9]) ?([AaPp]\\.?[Mm]\\.?)?)'
-atTime = '((at (1[0-2]|0?[1-9]))(?!:) ?([AaPp]\\.?[Mm]\\.?)?)'
-hourOnlyTime = '((1[0-2]|0?[1-9]) ?([AaPp]\\.?[Mm]\\.?))'
-singleTime = f'({standardTime}|{atTime}|{hourOnlyTime})'
-
-singleTime = f'(?<!{singleTime}{timeRangeConnector}){singleTime}(?!{timeRangeConnector}{singleTime})'
-
-timeRange = f'((1[0-2]|0?[1-9])((:|\\.)([0-5][0-9]))? ?([AaPp]\\.?[Mm]\\.?)?){timeRangeConnector}((1[0-2]|0?[1-9])((:|\\.)([0-5][0-9]))? ?([AaPp]\\.?[Mm]\\.?)?)'
 
 timePatterns = {
   f'\\b({singleTime})\\b': handleSingleTimeStr,
@@ -624,9 +541,9 @@ def insertFlag(flag, buckets = [], allDatesTimes = {'dates': [], 'times': []}, i
   # Handling for all "time" flags
   if flag.type in ['shiftType', 'meal', 'time']:
     if flag.type == 'shiftType':
-      possTimes = shiftTypeTimes[flag.value]
+      possTimes = shiftTimesByType[flag.value]
     elif flag.type == 'meal':
-      possTimes = mealTimes[flag.value]
+      possTimes = shiftTimesByMeal[flag.value]
     elif flag.type == 'time':
       if type(flag.value) == tuple:
         allTimes = timespanToTimes(flag.value)
@@ -638,7 +555,7 @@ def insertFlag(flag, buckets = [], allDatesTimes = {'dates': [], 'times': []}, i
         # unless it's suspected to be a head cook shift 
         # or special meal cook, which are 3 hours
         # If it's over three hours, don't because it must be an error
-        if len(allTimes) <= 3 and not ((buckets[-1]['isLead'] or buckets[-1]['isSpecial']) and len(intersection(buckets[-1]['times'], shiftTypeTimes['cook'])) > 0):
+        if len(allTimes) <= 3 and not ((buckets[-1]['isLead'] or buckets[-1]['isSpecial']) and len(intersection(buckets[-1]['times'], shiftTimesByType['cook'])) > 0):
           for t in allTimes[1:]:
             
             newFlags.append(Flag(flag.position, 'time', t))
@@ -690,11 +607,11 @@ def insertFlag(flag, buckets = [], allDatesTimes = {'dates': [], 'times': []}, i
   elif flag.value == 'lead':
     buckets[-1]['isLead'] = True
     # might as well narrow down times to head cooks and PICs
-    buckets[-1]['times'] = intersection(buckets[-1]['times'], miscTimes['lead'])
+    buckets[-1]['times'] = intersection(buckets[-1]['times'], shiftTimesByAttribute['lead'])
   elif flag.value == 'special':
     buckets[-1]['isSpecial'] = True
     # might as well narrow down times to special cook and crew times
-    buckets[-1]['times'] = intersection(buckets[-1]['times'], miscTimes['special'])
+    buckets[-1]['times'] = intersection(buckets[-1]['times'], shiftTimesByAttribute['special'])
 
 
   # If last bucket is ready to pop out, pop it out as a shift
