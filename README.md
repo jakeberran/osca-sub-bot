@@ -15,7 +15,7 @@ Note: these setup instructions have not been my priority in this project, so it 
 
 2. To install the dependencies, run the following commands in order:
     - Install [pip-tools](https://github.com/jazzband/pip-tools) to use pip-compile with `pip install pip-tools`
-    - Compile the requirement packages (this gets all their dependencies, etc. until you have a complete list of all dependencies) with `pip-compile -o requirements.in`
+    - Compile the requirement packages (this gets all their dependencies, etc. until you have a complete list of all dependencies) with `pip-compile -o requirements.txt`
     - Now install the required packages: `pip install -r requirements.txt`
 
 3. Add `.../osca-sub-bot/app` to your PYTHONPATH, where `...` stands for the path of the directory you have the `osca-sub-bot` folder in. Here are some [instructions](https://bic-berkeley.github.io/psych-214-fall-2016/using_pythonpath.html#if-you-are-on-a-mac) that may help.
