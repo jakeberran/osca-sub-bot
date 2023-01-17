@@ -31,8 +31,8 @@ tabview = ctk.CTkTabview(root)
 tabview.pack(padx=0, pady=0)
 
 tab_home = tabview.add("Home")
-tab_settings = tabview.add("Settings")
 tab_shifts = tabview.add("Shifts")
+tab_settings = tabview.add("Settings")
 tab_help = tabview.add('Help')
 tabview.set("Home")
 

@@ -2,9 +2,9 @@
 This is an email bot designed for use in my student cooperative at Oberlin College, the Oberlin Student Cooperative Association. It helps aggregate shift sub requests that are waiting to be filled. It sends out a digest with all of the remaining sub requests, each with links to pre-filled emails to contact the requester, mark the request as covered, and add the shift to your Google Calendar.
 
 ![Example of a sub bot email](example_email.jpg)
-
-Eventually, I plan to make a GUI and possibly run this in the cloud using Microsoft Azure Functions so no one needs to worry about actually triggering the sub bot on their own computer or setting it up to run daily. The files for this are mostly in place, it just has not been thoroughly tested or deployed. If/when that does happen, the following will apply:
-- To manually run this Azure function, follow the instructions [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-manually-run-non-http). This will eventually have actual instructions.
+![Home tab](gui_home.jpg)
+![Shifts tab](gui_shifts.jpg)
+![Settings tab](gui_settings.jpg)
 
 ## Need to set up your own?
 Note: these setup instructions have not been my priority in this project, so it may not work correctly or I may have forgotten steps. Feel free to troubleshoot yourself or contact me.
@@ -55,3 +55,7 @@ Here's how `app/app.py` works. It runs the following steps from the `app/steps` 
 
 ## Known Issues
 - It can't parse things like "I need a sub 3:20 on wednesday and thursday and 5:20 on friday" without newlines, this could be solved with a more complex apparatus for "and" and list detection, or smart detection of the order the writer puts dates and meals/shifts/times in
+
+## Future Plans
+Eventually, I plan to possibly run this in the cloud using Microsoft Azure Functions so no one needs to worry about actually triggering the sub bot on their own computer or setting it up to run daily. The files for this are mostly in place, it just has not been thoroughly tested or deployed. If/when that does happen, the following will apply:
+- To manually run this Azure function, follow the instructions [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-manually-run-non-http). This will eventually have actual instructions.
