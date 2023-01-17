@@ -8,6 +8,7 @@ from classes.FunctionWithAppendedArguments import FunctionWithAppendedArguments
 import regex as re
 from classes.Flag import Flag
 from datetime import datetime, timedelta
+from decouple import config
 import logging
 logger = logging.getLogger('parser')
 
@@ -40,7 +41,7 @@ NOW = datetime.now()
 # }
 
 # Compute shift times from globally stored
-shiftTimesDict = getDB('app/settings.json')['shiftTimes']
+shiftTimesDict = getDB('app/shifts.json')
 shiftTimesByType = shiftTimesDict['byType']
 shiftTimesByMeal = shiftTimesDict['byMeal']
 shiftTimesByAttribute = shiftTimesDict['byAttribute']
@@ -181,9 +182,11 @@ def handleSingleTimeStr(timeStr):
   elif 'pm' in timeStr or 'p.m' in timeStr:
     m = 'PM'
   else: # defaults to 9am-8pm (can be overridden by breakfast crew later on)
-    if int(hours) > 8 and int(hours) < 12: # 9, 10, or 11 default to AM
+    lastPMHour = config('LAST_PM_HOUR', cast=int)
+
+    if int(hours) > lastPMHour and int(hours) < 12: # If 8, then each of 9, 10, and 11 default to AM
       m = 'AM'
-    elif int(hours) <= 8 or int(hours) == 12: # 1 through 8 and 12 default to PM in the absence of other information
+    elif int(hours) <= lastPMHour or int(hours) == 12: # 1 through 8 and 12 default to PM in the absence of other information
       m = 'PM'
 
   return f'{hours}:{minutes} {m}'
