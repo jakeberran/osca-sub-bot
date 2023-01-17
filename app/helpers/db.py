@@ -1,7 +1,7 @@
 from decouple import config
 import json
 
-testing = config('TESTING')
+testing = config('TESTING', cast=bool)
 defaultDatabasePath = 'app/testDatabase.json' if testing else 'app/database.json'
 
 def getDB(databasePath=defaultDatabasePath):

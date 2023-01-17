@@ -162,7 +162,7 @@ def saveList():
   return
 
 def sendRealEmail():
-  writeAndSend(True) # TODO change to false
+  writeAndSend(config('TESTING', cast=bool)) # TODO change to false
   tk.messagebox.showinfo('Sub Bot', 'Email sent!')
 
 
