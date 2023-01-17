@@ -20,26 +20,6 @@ DATE_FORMAT = '%m/%d'
 TIME_FORMAT = '%I:%M %p'
 NOW = datetime.now()
 
-# todo store all these globally somewhere, in a simpler way, and compute them here
-# shiftTimesByType = {
-#   'breakfast crew': ['08:20 AM'],
-#   'pre-crew': ['11:50 AM', '05:50 PM'],
-#   'crew': ['08:20 AM', '01:00 PM', '07:00 PM'],
-#   'commando': ['08:30 PM'],
-#   'cook': ['09:20 AM', '10:20 AM', '11:20 AM', '03:20 PM', '04:20 PM', '05:20 PM']
-# }
-
-# shiftTimesByMeal = {
-#   'lunch': ['11:50 AM', '01:00 PM', '09:20 AM', '10:20 AM', '11:20 AM'],
-#   'dinner': ['05:50 PM', '07:00 PM', '03:20 PM', '04:20 PM', '05:20 PM'],
-#   'pizza': ['05:50 PM', '07:00 PM', '03:20 PM', '04:20 PM', '05:20 PM']
-# }
-
-# shiftTimesByAttribute = {
-#   'lead': ['09:20 AM', '01:00 PM', '03:20 PM', '07:00 PM'],
-#   'special': ['09:20 AM', '01:00 PM', '03:20 PM', '07:00 PM']
-# }
-
 # Compute shift times from globally stored
 shiftTimesDict = getDB('app/shifts.json')
 shiftTimesByType = shiftTimesDict['byType']
