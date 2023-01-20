@@ -16,3 +16,6 @@ debugging.log
 TODO.md
 *.log
 .pyc
+*.spec
+build/
+dist/

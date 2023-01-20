@@ -12,15 +12,11 @@ logger = logging.getLogger('reader')
 from classes.EmailClass import Email # custom email class, use the provided email module when ready
 from helpers.db import getDB, overwriteDB, updateTopId
 
-username = config('EMAIL_USERNAME') # os.environ["EMAIL_USERNAME"]
-password = config('EMAIL_PASSWORD') # os.environ["EMAIL_PASSWORD"]
-imap_server = config('IMAP_SERVER') # os.environ["IMAP_SERVER"]
-
-# def clean(text):
-#   # clean text for creating a folder
-#   return "".join(c if c.isalnum() else "_" for c in text)
-
 def readEmails(databasePath, inbox = 'INBOX', outputJsonPath = False, readNEmails = False):
+  username = config('EMAIL_USERNAME') # os.environ["EMAIL_USERNAME"]
+  password = config('EMAIL_PASSWORD') # os.environ["EMAIL_PASSWORD"]
+  imap_server = config('IMAP_SERVER') # os.environ["IMAP_SERVER"]
+  
   try:
     logger.info('Logging into the IMAP server...')
     # create an IMAP4 class with SSL 

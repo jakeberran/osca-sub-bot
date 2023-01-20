@@ -7,6 +7,8 @@ from decouple import config
 from datetime import datetime
 from helpers.db import getDB, overwriteDB, updateTopId
 import logging
+import dotenv
+import os
 logger = logging.getLogger('app')
 
 def readParseAndHandle(readNemails = False):
@@ -37,6 +39,19 @@ def updateSubRequests(subRequestsList):
     'subRequests': subRequestsList
   }
   overwriteDB(dct, config('DATABASE_PATH'))
+
+def updateDatabasePath():
+  # Set the non-settable variables
+  dotenv_file = dotenv.find_dotenv()
+  dotenv.load_dotenv(dotenv_file)
+
+  if config('TESTING', default=True, cast=bool):
+    databasePath = 'app/data/testDatabase.json'
+  else:
+    databasePath = 'app/data/database.json'
+  
+  os.environ['DATABASE_PATH'] = databasePath
+  dotenv.set_key(dotenv_file, 'DATABASE_PATH', os.environ['DATABASE_PATH'])
 
 def writeAndSend(testing = True):
   # Set variables for writing the email

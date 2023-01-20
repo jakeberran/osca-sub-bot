@@ -7,9 +7,9 @@ from decouple import config
 import logging
 logger = logging.getLogger('writer')
 
-ggroup = config('REAL_TO_EMAIL')
-
 def writeEmail(From, to, subject, databasePath):
+  ggroup = config('REAL_TO_EMAIL')
+  
   logger.info('========== WRITING EMAIL ==========')
 
   # The directory of this script relative to /osca-sub-bot/, useful for accessing template.html and result.html

@@ -21,7 +21,7 @@ TIME_FORMAT = '%I:%M %p'
 NOW = datetime.now()
 
 # Compute shift times from globally stored
-shiftTimesDict = getDB('app/shifts.json')
+shiftTimesDict = getDB('app/data/shifts.json')
 shiftTimesByType = shiftTimesDict['byType']
 shiftTimesByMeal = shiftTimesDict['byMeal']
 shiftTimesByAttribute = shiftTimesDict['byAttribute']

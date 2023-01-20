@@ -8,11 +8,11 @@ import os
 import logging
 logger = logging.getLogger('sender')
 
-username = config('EMAIL_USERNAME') # os.environ["EMAIL_USERNAME"] # for Azure
-password = config('EMAIL_PASSWORD') # os.environ["EMAIL_PASSWORD"]
-smtp_server = config('SMTP_SERVER') # os.environ["SMTP_SERVER"]
-
 def sendEmail(From, to, subject, body):
+  username = config('EMAIL_USERNAME') # os.environ["EMAIL_USERNAME"] # for Azure
+  password = config('EMAIL_PASSWORD') # os.environ["EMAIL_PASSWORD"]
+  smtp_server = config('SMTP_SERVER') # os.environ["SMTP_SERVER"]
+  
   logger.info('========== SENDING EMAIL ==========')
 
   msg = MIMEMultipart('alternative')
