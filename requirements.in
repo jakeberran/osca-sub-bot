@@ -15,4 +15,6 @@ Werkzeug==2.0.2
 python-decouple==3.1
 customtkinter
 python-dotenv
+pyinstaller
+tk
 regex
