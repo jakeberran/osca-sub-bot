@@ -167,10 +167,12 @@ def main():
     if readNemails_.get() == '':
       readNemails = False
     elif not readNemails_.get().isdigit():
-      tk.messagebox.showerror('Error', 'Please enter a valid number of emails, or leave blank.')
+      tk.messagebox.showerror('Error', 'Please enter a positive number of emails, or leave blank.')
       return
     elif int(readNemails_.get()) > 0:
       readNemails = int(readNemails_.get())
+    else:
+      tk.messagebox.showerror('Error', 'Please enter a positive number of emails, or leave blank.')
 
     try:
       readParseAndHandle(readNemails)
