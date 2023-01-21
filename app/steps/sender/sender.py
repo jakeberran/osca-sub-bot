@@ -48,8 +48,7 @@ def sendEmail(From, to, subject, body):
 if __name__ == '__main__':
   logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
   # Get the test HTML file.
-  thisDir = 'app/steps/writer/'
-  inFile = thisDir + 'result.html'
+  inFile = 'app/data/result.html'
 
   with open(inFile, 'r') as f:
     From = "Sub Bot"

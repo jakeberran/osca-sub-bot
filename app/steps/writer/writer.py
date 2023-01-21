@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import copy
 from decouple import config
 import logging
+import os
 logger = logging.getLogger('writer')
 
 def writeEmail(From, to, subject, databasePath):
@@ -13,9 +14,9 @@ def writeEmail(From, to, subject, databasePath):
   logger.info('========== WRITING EMAIL ==========')
 
   # The directory of this script relative to /osca-sub-bot/, useful for accessing template.html and result.html
-  thisDir = 'app/steps/writer/'
-  templatePath = thisDir + 'template.html'
-  resultPath = thisDir + 'result.html'
+  # Calculate the relative path of the template and result files relative to the running script.
+  templatePath = 'app/data/template.html'
+  resultPath = 'app/data/result.html'
 
   # Grab sub requests from the database
   subRequests = copy.deepcopy(getDB(databasePath)['subRequests'])
@@ -66,7 +67,7 @@ def writeEmail(From, to, subject, databasePath):
     subBotEmail = config('EMAIL_USERNAME')
   )
 
-  with open(resultPath,'w') as f: f.write(body) # overwrites old result.html
+  with open(resultPath,'w+') as f: f.write(body) # overwrites old result.html
   return (From, to, subject, body)
 
 if __name__ == '__main__':
