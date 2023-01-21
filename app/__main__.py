@@ -173,6 +173,7 @@ def main():
       readNemails = int(readNemails_.get())
     else:
       tk.messagebox.showerror('Error', 'Please enter a positive number of emails, or leave blank.')
+      return
 
     try:
       readParseAndHandle(readNemails)
@@ -182,8 +183,13 @@ def main():
     home_tabview.set("Current")
 
   def sendRealEmail():
-    writeAndSend(config('TESTING', default=True, cast=bool)) # TODO change to false
-    tk.messagebox.showinfo('Sub Bot', 'Email sent!')
+    result = writeAndSend(config('TESTING', default=True, cast=bool)) # TODO change to false
+    if result == 0:
+      tk.messagebox.showinfo('Sub Bot', 'No sub requests to send.')
+    elif result == 1:
+      tk.messagebox.showinfo('Sub Bot', 'Email sent!')
+    else:
+      tk.messagebox.showinfo('Sub Bot', 'Error in writing and sending email.')
   
   button_processNewEmails = ctk.CTkButton(homeButtons, text="Process New Emails", command=processNewEmails)
   button_sendRealEmail = ctk.CTkButton(homeButtons, text="Send Real Email", command=sendRealEmail)

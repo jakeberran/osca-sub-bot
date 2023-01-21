@@ -65,7 +65,7 @@ def writeAndSend(testing = True):
   try:
     if len(getDB(config('DATABASE_PATH'))['subRequests']) == 0:
       logger.info('No new sub requests. No email will send.')
-      return
+      return 0
 
     # write the email
     if testing:
@@ -77,11 +77,11 @@ def writeAndSend(testing = True):
 
     sendEmail(*sendParams)
 
-    return
+    return 1
 
-  except:
-    logger.error('Error in writing and sending the email.')
-    return
+  except Exception as e:
+    logger.error('Error in writing and sending the email:' + str(e))
+    return -1
 
 # If running this script directly (e.g. for testing), then just call runApp()
 if __name__ == "__main__":
