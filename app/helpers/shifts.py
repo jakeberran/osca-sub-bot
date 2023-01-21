@@ -4,6 +4,9 @@ from datetime import datetime
 import logging
 logger = logging.getLogger('shifts')
 
+DATE_FORMAT = '%m/%d'
+TIME_FORMAT = '%I:%M %p'
+
 shiftTypes = {
   '08:20 AM': 'Breakfast Crew',
   '09:20 AM': 'Lunch Cook',
@@ -33,9 +36,10 @@ def datetimeToShiftInfo(dateTime):
 
   shiftInfo = {}
 
-  shiftInfo['date'] = dateTime.strftime("%-m/%d")
+  print(dateTime)
+  shiftInfo['date'] = dateTime.strftime(DATE_FORMAT)
   shiftInfo['weekday'] = dateTime.strftime("%A")
-  shiftInfo['time'] = dateTime.strftime("%I:%M %p")
+  shiftInfo['time'] = dateTime.strftime(TIME_FORMAT)
   try:
     shiftInfo['type'] = shiftTypes[shiftInfo['time']]
     return shiftInfo
