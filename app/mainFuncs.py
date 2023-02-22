@@ -7,6 +7,8 @@ from decouple import config
 from datetime import datetime
 from helpers.db import getDB, overwriteDB, updateTopId
 import logging
+import dotenv
+import os
 logger = logging.getLogger('app')
 
 def readParseAndHandle(readNemails = False):
@@ -38,6 +40,19 @@ def updateSubRequests(subRequestsList):
   }
   overwriteDB(dct, config('DATABASE_PATH'))
 
+def updateDatabasePath():
+  # Set the non-settable variables
+  dotenv_file = dotenv.find_dotenv()
+  dotenv.load_dotenv(dotenv_file)
+
+  if config('TESTING', default=True, cast=bool):
+    databasePath = 'app/data/testDatabase.json'
+  else:
+    databasePath = 'app/data/database.json'
+  
+  os.environ['DATABASE_PATH'] = databasePath
+  dotenv.set_key(dotenv_file, 'DATABASE_PATH', os.environ['DATABASE_PATH'])
+
 def writeAndSend(testing = True):
   # Set variables for writing the email
   From = "Sub Bot"
@@ -50,7 +65,7 @@ def writeAndSend(testing = True):
   try:
     if len(getDB(config('DATABASE_PATH'))['subRequests']) == 0:
       logger.info('No new sub requests. No email will send.')
-      return
+      return 0
 
     # write the email
     if testing:
@@ -62,11 +77,11 @@ def writeAndSend(testing = True):
 
     sendEmail(*sendParams)
 
-    return
+    return 1
 
-  except:
-    logger.error('Error in writing and sending the email.')
-    return
+  except Exception as e:
+    logger.error('Error in writing and sending the email:' + str(e))
+    return -1
 
 # If running this script directly (e.g. for testing), then just call runApp()
 if __name__ == "__main__":

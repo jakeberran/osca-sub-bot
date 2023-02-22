@@ -1,24 +1,25 @@
+# To easily load and overwrite JSON files
+
 from decouple import config
 import json
 
-testing = config('TESTING', cast=bool)
-defaultDatabasePath = 'app/testDatabase.json' if testing else 'app/database.json'
+testing = config('TESTING', default=True, cast=bool)
 
-def getDB(databasePath=defaultDatabasePath):
+def getDB(databasePath):
   with open(databasePath, 'r') as f:
     strData = f.read()
   
   dictData = json.loads(strData) # load as python dictionary
   return dictData
 
-def overwriteDB(dict, databasePath=defaultDatabasePath):
+def overwriteDB(dict, databasePath):
   jsonString = json.dumps(dict, indent=2)
 
   # Open in overwrite mode
   with open(databasePath, 'w') as f:
     f.write(jsonString)
 
-def updateTopId(id, databasePath=defaultDatabasePath):
+def updateTopId(id, databasePath):
   dictData = getDB(databasePath)
   dictData['lastIdProcessed'] = id
   overwriteDB(dictData, databasePath)

@@ -8,11 +8,11 @@ import os
 import logging
 logger = logging.getLogger('sender')
 
-username = config('EMAIL_USERNAME') # os.environ["EMAIL_USERNAME"] # for Azure
-password = config('EMAIL_PASSWORD') # os.environ["EMAIL_PASSWORD"]
-smtp_server = config('SMTP_SERVER') # os.environ["SMTP_SERVER"]
-
 def sendEmail(From, to, subject, body):
+  username = config('EMAIL_USERNAME') # os.environ["EMAIL_USERNAME"] # for Azure
+  password = config('EMAIL_PASSWORD') # os.environ["EMAIL_PASSWORD"]
+  smtp_server = config('SMTP_SERVER') # os.environ["SMTP_SERVER"]
+  
   logger.info('========== SENDING EMAIL ==========')
 
   msg = MIMEMultipart('alternative')
@@ -48,8 +48,7 @@ def sendEmail(From, to, subject, body):
 if __name__ == '__main__':
   logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
   # Get the test HTML file.
-  thisDir = 'app/steps/writer/'
-  inFile = thisDir + 'result.html'
+  inFile = 'app/data/result.html'
 
   with open(inFile, 'r') as f:
     From = "Sub Bot"

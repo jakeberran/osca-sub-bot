@@ -1,1 +1,169 @@
-# so that this is a module
+# Create necessary files if they don't exist
+import os.path
+
+# Check whether the specified path exists or not
+for dir in ['app', 'app/data']:
+  if not os.path.exists(dir):
+    os.makedirs(dir)
+
+necessaryFiles = {
+  'envPath': {
+    'path': '.env',
+    'default': """EMAIL_USERNAME=''
+EMAIL_PASSWORD=''
+IMAP_SERVER='imap.gmail.com'
+SMTP_SERVER='smtp.gmail.com'
+TEST_TO_EMAIL=''
+REAL_TO_EMAIL=''
+DATABASE_PATH='app/data/testDatabase.json'
+TESTING='True'
+LAST_PM_HOUR=8"""
+  },
+  'debuggingLogPath': {
+    'path': 'app/debugging.log',
+    'default': ''
+  },
+  'topIdLogPath': {
+    'path': 'app/topIdLog.csv',
+    'default': ''
+  },
+  'databasePath': {
+    'path': 'app/data/database.json',
+    'default': """{
+  "lastIdProcessed": 0,
+
+  "subRequests": [
+    
+  ]
+}"""
+  },
+  'testDatabasePath': {
+    'path': 'app/data/testDatabase.json',
+    'default': """{
+  "lastIdProcessed": 0,
+
+  "subRequests": [
+    
+  ]
+}"""
+  },
+  'shiftsPath': {
+    'path': 'app/data/shifts.json',
+    'default': """{
+  "byType": {
+    "breakfast crew": [
+      "08:20 AM"
+    ],
+    "pre-crew": [
+      "11:50 AM",
+      "05:50 PM"
+    ],
+    "crew": [
+      "08:20 AM",
+      "01:00 PM",
+      "07:00 PM"
+    ],
+    "commando": [
+      "08:30 PM"
+    ],
+    "cook": [
+      "09:20 AM",
+      "10:20 AM",
+      "11:20 AM",
+      "03:20 PM",
+      "04:20 PM",
+      "05:20 PM"
+    ]
+  },
+  "byMeal": {
+    "lunch": [
+      "09:20 AM",
+      "10:20 AM",
+      "11:20 AM",
+      "11:50 AM",
+      "01:00 PM"
+    ],
+    "dinner": [
+      "05:50 PM",
+      "07:00 PM",
+      "03:20 PM",
+      "04:20 PM",
+      "05:20 PM"
+    ],
+    "pizza": [
+      "05:50 PM",
+      "07:00 PM",
+      "03:20 PM",
+      "04:20 PM",
+      "05:20 PM"
+    ]
+  },
+  "byAttribute": {
+    "lead": [
+      "09:20 AM",
+      "01:00 PM",
+      "03:20 PM",
+      "07:00 PM"
+    ],
+    "special": [
+      "09:20 AM",
+      "01:00 PM",
+      "03:20 PM",
+      "07:00 PM"
+    ]
+  }
+}"""
+  },
+  'templatePath:': {
+    'path': 'app/data/template.html',
+    'default': """<html>
+  <body>
+    <h1>Daily Subs | {{ today }}</h1>
+    <div style="margin-bottom: 1em"><a href="mailto:{{ subBotEmail }}?subject=Sub%20form&body=Sorry%20for%20missing%20your%20email.%20This%20form%20will%20make%20sure%20you%20get%20on%20the%20list%21%20Just%20replace%20the%20info%20and%20send.%0A%0AShift%20date%3A%20MM%2FDD.%20Time%3A%2000%3A00%20AM.%20Type%3A%20cook%7Ccrew%7Chead%20cook%7Ccommando%7Cetc.%0A%0A%0ACopy%20and%20paste%20that%20line%20to%20add%20more%20sub%20requests.">Not seeing yours?</a></div>
+    <div style="border-left: 2px solid gray; border-right: 2px solid gray;">
+      <hr 
+        style="margin: 0; border: 1px solid gray; background-color: gray"
+      >
+      {% for r in subRequests %}
+      {% set shift = r['shift'] %}
+      {% set sender = r['sender'] %}
+      {% set replySubj = 'Covering%20your%20shift' %}
+      {% set replyBody1 = 'I%20can%20cover%20your%20' + shift['type'].lower().replace(' ', '%20') + '%20shift%20on%20' + shift['weekday'] + '%2C%20' +  shift['date'].replace('/', '%2F') + '%20at%20' + shift['time'].replace(' ', '%20').replace(':', '%3A') + '.' %}
+      {% set replyBody2 = '%E2%80%94%E2%80%94%E2%80%94%0ANote%20for%20sender%3A%0A%E2%80%A2%20To%20take%20this%20request%20off%20the%20list%20right%20now%2C%20add%20' + subBotEmail.replace('@', '%40') + '%20as%20a%20recipient%20or%20CC.%0A%E2%80%A2%20Otherwise%2C%20click%20the%20%22This%20is%20covered%22%20link%20in%20the%20list%20entry.%20Or%20someone%20can%20send%20a%20reply%20in%20the%20original%20thread%20saying%20it%27s%20covered.%0A%E2%80%94%E2%80%94%E2%80%94' %}
+      {% set shiftData = '%E2%80%94%E2%80%94%E2%80%94%0AData%20for%20sub%20bot%20cover%20%28please%20don%27t%20delete%29%3A%0Acovered%2C' + sender['email'] + '%2C' + shift['datetime'] %}
+      {% set contactLink = 'mailto:' + sender['email'] + '?subject=' + replySubj + '&body=' + replyBody1 + '%0A%0A' + replyBody2 + '%0A%0A%0A' + shiftData %}
+      {% set coverLink = "mailto:" + subBotEmail + "?subject=Shift%20covered&body=Just%20hit%20send%21%0A%0A" + shiftData %}
+      {% set startTime = shift['datetime'].replace('-', '').replace(':', '').replace('.', '') %}
+      {% set endTime = shift['endDatetime'].replace('-', '').replace(':', '').replace('.', '') %}
+      {% set calendarLink = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + shift['type'].replace(' ', '%20') + '&dates=' + startTime + '/' + endTime %}
+      <div 
+        style="padding: 1em"
+      >
+        {% if r['isNew'] %}<span style="color: red; margin-bottom: 0.5em">[NEW]</span><br>{% endif %}
+        {% if r['isBoosted'] %}<span style="color: rgb(0, 191, 255); margin-bottom: 0.5em">[RECENT ACTIVITY]</span><br>{% endif %}
+        <b>{{ shift['weekday'] }}, {{ shift['date'] }} @ {{ shift['time'] }}</b><br>
+        <b>{{ shift['type'] }}</b><br>
+        <a href="{{ contactLink }}">Contact {{ sender['email'] }}</a><br>
+        <a href="{{ coverLink }}">This is covered</a><br>
+        <a href="{{ calendarLink }}">Add to Google Calendar</a>
+      </div>
+      <hr
+        style="margin: 0; border: 1px solid gray; background-color: gray"
+      >
+      {% endfor %}
+    </div>
+    <div style="margin-top: 1em"><a href="mailto:{{ subBotEmail }}?subject=Manually%20add%20sub&body=%E2%80%94%E2%80%94%E2%80%94%0AData%20for%20sub%20bot%20sub%20%28please%20don%27t%20delete%29%3A%0Asub%2CX%40X.X%2C2022-12-31T16%3A20%3A00%2CisLead%3Dfalse%2CisSpecial%3Dfalse">Add someone else's request</a></div>
+    <!-- <p>Extra info will go here.</p> -->
+    <!-- Newly added requests since the last digest are highlighted -->
+  </body>
+</html>"""
+  }
+}
+
+for file in necessaryFiles.keys():
+  path = necessaryFiles[file]['path']
+  default = necessaryFiles[file]['default']
+
+  if not os.path.exists(path):
+    with open(path, 'w+') as f:
+      f.write(default)
