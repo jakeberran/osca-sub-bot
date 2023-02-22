@@ -53,5 +53,4 @@ Here's how `app/app.py` works. It runs the following steps from the `app/steps` 
 - It can't parse things like "I need a sub 3:20 on wednesday and thursday and 5:20 on friday" without newlines, this could be solved with a more complex apparatus for "and" and list detection, or smart detection of the order the writer puts dates and meals/shifts/times in
 
 ## Future Plans
-Eventually, I plan to possibly run this in the cloud using Microsoft Azure Functions so no one needs to worry about actually triggering the sub bot on their own computer or setting it up to run daily. The files for this are mostly in place, it just has not been thoroughly tested or deployed. If/when that does happen, the following will apply:
-- To manually run this Azure function, follow the instructions [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-manually-run-non-http). This will eventually have actual instructions.
+Eventually, it could be run in the cloud? Using something like Microsoft Azure Functions so no one needs to worry about actually triggering the sub bot on their own computer or setting it up to run daily. But it doesn't work well enough for me to trust this now.
