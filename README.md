@@ -49,10 +49,6 @@ Here's how `app/app.py` works. It runs the following steps from the `app/steps` 
   - Get more shifts covered, to try to get rid of "co-op saviors", one-person crews, etc.
   - Ease the burden of the workchart coordinator and missed jobs coordinator
 
-  ### Fun Facts (about how sub emails get buried)
-  - At Harkness in Spring 2022, 56 out of the last 300 emails were sub requests
-  - Out of the last 200 emails, there were an average of ~13 emails per day
-
 ## Known Issues
 - It can't parse things like "I need a sub 3:20 on wednesday and thursday and 5:20 on friday" without newlines, this could be solved with a more complex apparatus for "and" and list detection, or smart detection of the order the writer puts dates and meals/shifts/times in
 
